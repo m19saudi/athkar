@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ذاكرون</title>
+
+<style>
+:root {
+  --bg:#0f172a;
+  --glass:rgba(255,255,255,0.08);
+  --text:#f1f5f9;
+  --primary:#38bdf8;
+}
+.light {
+  --bg:#f1f5f9;
+  --glass:rgba(255,255,255,0.6);
+  --text:#0f172a;
+}
+body {
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  transition:.4s;
+}
+
+/* Glass Card */
+.card {
+  background:var(--glass);
+  backdrop-filter:blur(12px);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:12px;
+  transition:.3s;
+}
+.card:active {transform:scale(.98);}
+
+/* Tabs */
+.tabs {
+  display:flex;
+  justify-content:space-around;
+  padding:12px;
+  position:sticky;
+  top:0;
+  backdrop-filter:blur(10px);
+}
+.tabs button {
+  background:none;
+  border:none;
+  color:var(--text);
+  font-size:14px;
+}
+
+/* Pages */
+.page {display:none;padding:16px;animation:fade .3s;}
+.page.active {display:block;}
+
+@keyframes fade {
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;}
+}
+
+/* Prayer */
+.prayer {
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+}
+
+/* Zikr */
+.zikr {cursor:pointer;}
+.count {opacity:.7;font-size:13px;margin-top:5px;}
+
+/* Scroll */
+.scroll {max-height:65vh;overflow:auto;}
+
+/* Buttons */
+.btn {
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+  color:#fff;
+  margin-bottom:10px;
+}
+
+/* Tasbeeh */
+.big {
+  font-size:48px;
+  text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button onclick="show('home')">🏠</button>
+  <button onclick="show('prayer')">🕌</button>
+  <button onclick="show('morning')">🌅</button>
+  <button onclick="show('evening')">🌙</button>
+  <button onclick="show('tasbeeh')">📿</button>
+  <button onclick="toggle()">🌓</button>
+</div>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <button class="btn" onclick="show('prayer')">مواقيت الصلاة</button>
+  <button class="btn" onclick="show('morning')">أذكار الصباح</button>
+  <button class="btn" onclick="show('evening')">أذكار المساء</button>
+  <button class="btn" onclick="show('tasbeeh')">المسبحة</button>
+</div>
+
+<!-- PRAYER -->
+<div id="prayer" class="page">
+  <h3>مواقيت الصلاة - المبرز</h3>
+  <div id="prayerTimes" class="card"></div>
+</div>
+
+<!-- MORNING -->
+<div id="morning" class="page">
+  <h3>أذكار الصباح</h3>
+  <div id="morningList" class="scroll"></div>
+</div>
+
+<!-- EVENING -->
+<div id="evening" class="page">
+  <h3>أذكار المساء</h3>
+  <div id="eveningList" class="scroll"></div>
+</div>
+
+<!-- TASBEEH -->
+<div id="tasbeeh" class="page">
+  <div class="card" onclick="incTasbeeh()">
+    <h3>مسبحة</h3>
+    <div id="tasbeehCount" class="big">0</div>
+  </div>
+</div>
+
+<script>
+/* Navigation */
+let current="home";
+function show(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  current=id;
+}
+
+/* Swipe */
+let startX=0;
+document.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
+document.addEventListener("touchend",e=>{
+  let dx=e.changedTouches[0].clientX-startX;
+  const pages=["home","prayer","morning","evening","tasbeeh"];
+  let i=pages.indexOf(current);
+  if(dx<-50 && i<pages.length-1) show(pages[i+1]);
+  if(dx>50 && i>0) show(pages[i-1]);
+});
+
+/* Prayer API (Mubarraz) */
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Al%20Mubarraz&country=Saudi%20Arabia")
+.then(r=>r.json())
+.then(data=>{
+  let t=data.data.timings;
+  document.getElementById("prayerTimes").innerHTML=`
+    <div class="prayer"><span>الفجر</span><span>${t.Fajr}</span></div>
+    <div class="prayer"><span>الظهر</span><span>${t.Dhuhr}</span></div>
+    <div class="prayer"><span>العصر</span><span>${t.Asr}</span></div>
+    <div class="prayer"><span>المغرب</span><span>${t.Maghrib}</span></div>
+    <div class="prayer"><span>العشاء</span><span>${t.Isha}</span></div>
+  `;
+});
+
+/* Full Azkar */
+const azkar = [
+{t:"اللّهـمَّ أَنْتَ رَبِّي لا إلهَ إلاّ أَنْتَ، خَلَقْتَني وأنا عَبْدُك...", max:1},
+{t:"اللّهـمَّ بِكَ أَصْبَحْنا وبِكَ أَمْسَيْنا وبِكَ نَحْيا وبِكَ نَمُوت...", max:1},
+{t:"سُبْحانَ الله وبِحَمْدِهِ", max:100},
+{t:"رَضيتُ باللهِ رَبًّا وبالإسلامِ دينًا وبمُحمدٍ ﷺ نبيًا", max:3},
+{t:"حَسْبِيَ اللَّهُ لا إِلَهَ إِلَّا هُوَ...", max:7}
+];
+
+function render(id){
+  let container=document.getElementById(id+"List");
+  container.innerHTML="";
+  azkar.forEach((z,i)=>{
+    let key=id+i;
+    let c=+localStorage.getItem(key)||0;
+
+    let div=document.createElement("div");
+    div.className="card zikr";
+    div.innerHTML=`${z.t}<div class="count">${c}/${z.max}</div>`;
+
+    div.onclick=()=>{
+      if(c<z.max){
+        c++;
+        localStorage.setItem(key,c);
+        render(id);
+      }
+    };
+    container.appendChild(div);
+  });
+}
+render("morning");
+render("evening");
+
+/* Tasbeeh */
+let t=+localStorage.getItem("tasbeeh")||0;
+document.getElementById("tasbeehCount").innerText=t;
+function incTasbeeh(){
+  t++; localStorage.setItem("tasbeeh",t);
+  document.getElementById("tasbeehCount").innerText=t;
+}
+
+/* Theme */
+function toggle(){
+  document.body.classList.toggle("light");
+}
+</script>
+
+</body>
+</html>
