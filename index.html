@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
@@ -349,7 +348,11 @@ if (state.ms_counts.length !== MOSQUE_DATA.length)
 
 window.onload = () => {
   const today = new Date().toLocaleDateString();
+  // 1. تصفير أذكار المسجد دائماً عند فتح التطبيق (بكل بساطة)
+   state.ms_counts = new Array(MOSQUE_DATA.length).fill(0);
+  localStorage.setItem('ms_c', JSON.stringify(state.ms_counts));
 
+  // 2. تصفير أذكار الصباح والمساء فقط إذا تغير التاريخ (مرة واحدة في اليوم)
   if (localStorage.getItem('last_use_date') !== today) {
     state.m_counts = new Array(MORNING_DATA.length).fill(0);
     state.e_counts = new Array(EVENING_DATA.length).fill(0);
