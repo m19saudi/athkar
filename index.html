@@ -288,7 +288,6 @@ const MOSQUE_DATA = [
   { t: "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ", g: 1 },
 
   { t: "سُـبْحانَ اللهِ", g: 33 },
-  { t: "سُـبْحانَ اللهِ", g: 33 },
   { t: "الحَمْـدُ لله", g: 33 },
   { t: "اللهُ أكْـبَر", g: 33 },
   { t: "لا إلهَ إلاّ اللّهُ وَحْـدَهُ لا شريكَ لهُ، لهُ الملكُ ولهُ الحَمْد، وهُوَ على كُلّ شَيءٍ قَـدير", g: 1 },
@@ -396,7 +395,7 @@ function jump(i) {        document.querySelectorAll('section').forEach(s => s.cl
                 let firstTap = localStorage.getItem('ms_first_tap');
                 if (!firstTap) {
                     localStorage.setItem('ms_first_tap', now);
-                } else if (now - parseInt(firstTap) > 3600000) {
+                } else if (now - parseInt(firstTap) > 60) {
                     counts = new Array(MOSQUE_DATA.length).fill(0);
                     state.ms_counts = counts;
                     localStorage.setItem('ms_first_tap', now);
